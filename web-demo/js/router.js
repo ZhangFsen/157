@@ -1,0 +1,5 @@
+(function(){
+  const order=['today','records','stats','projects','settings'];let current='today',locked=false;
+  const go=target=>{if(target===current||locked)return;locked=true;const from=document.querySelector(`.page[data-page="${current}"]`),to=document.querySelector(`.page[data-page="${target}"]`),reverse=order.indexOf(target)<order.indexOf(current);to.classList.toggle('enter-left',reverse);to.classList.add('active');requestAnimationFrame(()=>{requestAnimationFrame(()=>{to.classList.remove('enter-left');from.classList.toggle('exit-left',!reverse);from.style.transform=reverse?'translateX(20px)':''})});document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('on',b.dataset.target===target));const previous=current;current=target;setTimeout(()=>{from.classList.remove('active','exit-left');from.style.transform='';locked=false;window.Pages[target]?.refresh?.();window.dispatchEvent(new CustomEvent('pagechange',{detail:{from:previous,to:target}}))},250)};
+  window.Router={go,get current(){return current},init(){document.querySelectorAll('.bottom-nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.target)))}};
+})();

@@ -1,0 +1,4339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="个人效率计算">
+<title>个人效率计算</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    margin:0;
+    padding:0;
+    background:#f3f4f6;
+    color:#222;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    padding-bottom:74px;
+}
+
+button,input,select{
+    font-family:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.hidden{
+    display:none!important;
+}
+
+
+/* =========================
+   顶部
+========================= */
+
+.header{
+    background:#fff;
+    padding:11px 12px;
+    border-bottom:1px solid #e7e7e7;
+    position:sticky;
+    top:0;
+    z-index:50;
+}
+
+.header-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.header-title{
+    font-size:17px;
+    font-weight:700;
+}
+
+.header-date{
+    color:#999;
+    font-size:10px;
+    margin-top:2px;
+}
+
+.settings-btn{
+    border:0;
+    background:#f1f2f4;
+    color:#444;
+    border-radius:7px;
+    padding:7px 9px;
+    font-size:10px;
+}
+
+
+/* =========================
+   页面
+========================= */
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.container{
+    width:100%;
+    max-width:650px;
+    margin:0 auto;
+    padding:8px;
+}
+
+
+/* =========================
+   首页今日效率
+========================= */
+
+.efficiency-card{
+    background:#fff;
+    border-radius:14px;
+    padding:15px;
+    margin-bottom:9px;
+    box-shadow:0 1px 6px rgba(0,0,0,.05);
+}
+
+.efficiency-main{
+    display:flex;
+    align-items:center;
+    gap:17px;
+}
+
+
+/* 环形 */
+
+.circle-box{
+    width:150px;
+    height:150px;
+    flex:0 0 150px;
+    position:relative;
+}
+
+.circle-box svg{
+    width:150px;
+    height:150px;
+    transform:rotate(-90deg);
+}
+
+.circle-bg{
+    fill:none;
+    stroke:#eceef0;
+    stroke-width:10;
+}
+
+.circle-progress{
+    fill:none;
+    stroke:#111;
+    stroke-width:10;
+    stroke-linecap:round;
+    transition:stroke-dashoffset .5s ease;
+}
+
+.circle-center{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+
+.circle-percent{
+    font-size:30px;
+    max-width:88%;
+    white-space:nowrap;
+    letter-spacing:-.5px;
+    line-height:1;
+    font-weight:800;
+}
+
+.circle-percent.percent-4digit{font-size:22px;letter-spacing:-1px;}
+.circle-percent.percent-5digit{font-size:19px;letter-spacing:-1.2px;}
+
+.circle-label{
+    margin-top:5px;
+    font-size:10px;
+    color:#888;
+}
+
+
+/* 效率说明 */
+
+.eff-info{
+    flex:1;
+    min-width:0;
+}
+
+.eff-title{
+    font-size:13px;
+    color:#777;
+    margin-bottom:7px;
+}
+
+.eff-formula{
+    font-size:20px;
+    font-weight:800;
+    line-height:1.35;
+    word-break:break-all;
+}
+
+.eff-detail{
+    margin-top:8px;
+    color:#666;
+    font-size:10px;
+    line-height:1.6;
+}
+
+.eff-work{
+    margin-top:3px;
+    color:#aaa;
+    font-size:9px;
+}
+
+
+/* =========================
+   今日记录
+========================= */
+
+.record-card{
+    background:#fff;
+    border-radius:12px;
+    padding:9px;
+    box-shadow:0 1px 6px rgba(0,0,0,.04);
+}
+
+.today-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:5px;
+}
+
+.today-title{
+    font-size:14px;
+    font-weight:700;
+}
+
+.record-count{
+    color:#999;
+    font-size:9px;
+}
+
+.table-wrap{
+    width:100%;
+    overflow:hidden;
+}
+
+.compact-table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    font-size:11px;
+    user-select:none;
+    -webkit-user-select:none;
+}
+
+.compact-table th{
+    height:27px;
+    padding:2px;
+    background:#f4f5f6;
+    color:#777;
+    font-weight:600;
+    border-bottom:1px solid #e4e4e4;
+}
+
+.compact-table td{
+    min-height:46px;
+    height:auto;
+    padding:7px 3px;
+    text-align:center;
+    vertical-align:middle;
+    border-bottom:1px solid #eeeeee;
+    white-space:normal;
+    overflow:visible;
+}
+
+.compact-table tbody tr:last-child td{
+    border-bottom:0;
+}
+
+.compact-table .name-cell{
+    text-align:left;
+    font-size:14px;
+    font-weight:400;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.col-no{width:34px;}
+.col-name{width:auto;}
+.col-qty{width:52px;}
+.col-mmin{width:48px;}
+.col-min{width:55px;}
+.col-delete{width:30px;}
+
+.delete-btn{
+    width:23px;
+    height:21px;
+    padding:0;
+    border:0;
+    border-radius:5px;
+    background:#fceaea;
+    color:#c62828;
+    font-size:11px;
+}
+
+.empty{
+    text-align:center;
+    padding:23px 4px;
+    color:#aaa;
+    font-size:10px;
+}
+
+
+/* =========================
+   底部三个按钮
+========================= */
+
+.bottom-actions{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    height:66px;
+    background:#fff;
+    border-top:1px solid #ddd;
+    z-index:60;
+    display:grid;
+    grid-template-columns:1fr 1.25fr 1fr;
+    gap:7px;
+    padding:9px;
+}
+
+.bottom-action{
+    height:46px;
+    border:0;
+    border-radius:9px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.today-action{
+    background:#e7e8eb;
+    color:#222;
+}
+
+.add-action{
+    background:#111;
+    color:#fff;
+}
+
+.share-action{
+    background:#e7e8eb;
+    color:#222;
+}
+
+
+/* =========================
+   日历页面
+========================= */
+
+.calendar-header{
+    background:#fff;
+    border-radius:11px;
+    padding:10px;
+    margin-bottom:8px;
+}
+
+.calendar-header-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.calendar-title{
+    font-size:15px;
+    font-weight:700;
+}
+
+.calendar-sub{
+    color:#999;
+    font-size:9px;
+    margin-top:3px;
+}
+
+.calendar-month-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:9px;
+}
+
+.month-title{
+    font-size:14px;
+    font-weight:700;
+}
+
+.month-btn{
+    width:32px;
+    height:28px;
+    border:0;
+    border-radius:6px;
+    background:#eef0f2;
+    font-size:15px;
+}
+
+.calendar-card{
+    background:#fff;
+    border-radius:11px;
+    padding:8px;
+}
+
+.week-header,
+.calendar-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+}
+
+.week-header div{
+    text-align:center;
+    color:#999;
+    font-size:8px;
+    padding:5px 0;
+}
+
+.calendar-day{
+    min-width:0;
+    height:58px;
+    border:1px solid #f0f0f0;
+    position:relative;
+    padding:4px;
+    cursor:pointer;
+    background:#fff;
+}
+
+.calendar-day.empty-day{
+    background:#fafafa;
+    cursor:default;
+}
+
+.day-number{
+    font-size:9px;
+    color:#777;
+}
+
+.calendar-eff{
+    position:absolute;
+    left:2px;
+    right:2px;
+    bottom:5px;
+    text-align:center;
+    font-size:9px;
+    font-weight:800;
+}
+
+.calendar-day.today{
+    background:#f0f1f2;
+}
+
+.calendar-day.today .day-number{
+    font-weight:800;
+    color:#111;
+}
+
+.calendar-day.has-record{
+    background:#fafafa;
+}
+
+.calendar-day.selected{
+    outline:2px solid #111;
+    outline-offset:-2px;
+}
+
+
+/* =========================
+   月份统计
+========================= */
+
+.month-summary{
+    margin-top:8px;
+    background:#fff;
+    border-radius:11px;
+    padding:9px;
+}
+
+.month-summary-title{
+    font-size:11px;
+    font-weight:700;
+    margin-bottom:6px;
+}
+
+.month-summary-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:5px;
+}
+
+.summary-item{
+    background:#f5f6f7;
+    border-radius:6px;
+    padding:6px;
+    text-align:center;
+}
+
+.summary-label{
+    color:#888;
+    font-size:7px;
+}
+
+.summary-value{
+    margin-top:2px;
+    font-size:11px;
+    font-weight:700;
+}
+
+
+/* =========================
+   当天详情
+========================= */
+
+.detail-card{
+    background:#fff;
+    border-radius:11px;
+    padding:9px;
+    margin-top:8px;
+}
+
+.detail-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:7px;
+}
+
+.detail-title{
+    font-size:13px;
+    font-weight:700;
+}
+
+.detail-date{
+    color:#999;
+    font-size:8px;
+}
+
+.detail-eff-box{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:#f5f6f7;
+    border-radius:7px;
+    padding:7px 9px;
+    margin-bottom:7px;
+}
+
+.detail-eff-label{
+    font-size:9px;
+    color:#777;
+}
+
+.detail-eff-value{
+    font-size:18px;
+    font-weight:800;
+}
+
+
+/* =========================
+   弹窗
+========================= */
+
+.overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.48);
+    z-index:100;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+}
+
+.overlay.show{
+    display:flex;
+}
+
+.modal{
+    width:100%;
+    max-width:650px;
+    max-height:92vh;
+    overflow-y:auto;
+    background:#fff;
+    border-radius:15px 15px 0 0;
+    padding:13px 11px 20px;
+}
+
+.modal-title{
+    font-size:16px;
+    font-weight:700;
+    margin-bottom:9px;
+}
+
+.form-label{
+    display:block;
+    color:#666;
+    font-size:10px;
+    margin:8px 0 4px;
+}
+
+.select-box,
+.number-input{
+    width:100%;
+    height:42px;
+    border:1px solid #d8dbe0;
+    border-radius:8px;
+    background:#fff;
+    outline:none;
+    padding:0 9px;
+    font-size:13px;
+}
+
+.mmin-hint{
+    height:13px;
+    line-height:13px;
+    color:#999;
+    font-size:8px;
+    margin-top:2px;
+}
+
+.modal-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+    margin-top:10px;
+}
+
+.modal-btn{
+    height:41px;
+    border:0;
+    border-radius:8px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.primary{
+    background:#111;
+    color:#fff;
+}
+
+.secondary{
+    background:#eef0f2;
+    color:#333;
+}
+
+
+.admin-action-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+}
+
+.admin-half-btn{
+    margin-bottom:6px;
+}
+
+.process-admin-project{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:10px 4px;
+    border-bottom:1px solid #e8e8e8;
+    cursor:pointer;
+    font-size:11px;
+}
+
+.process-admin-project.open{
+    background:#fafafa;
+}
+
+.admin-arrow{
+    font-size:15px;
+    color:#7b8798;
+    transition:transform .18s ease;
+}
+
+.process-admin-project.open .admin-arrow{
+    transform:rotate(90deg);
+}
+
+.process-admin-items{
+    display:none;
+    padding-left:4px;
+}
+
+.process-admin-items.open{
+    display:block;
+}
+
+/* =========================
+   工序管理
+========================= */
+
+.process-admin-item{
+    padding:8px 0;
+    border-bottom:1px solid #eee;
+}
+
+.process-admin-top{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.process-code{
+    width:29px;
+    height:22px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f0f1f3;
+    border-radius:5px;
+    font-size:9px;
+    font-weight:700;
+}
+
+.process-admin-name{
+    flex:1;
+    min-width:0;
+    font-size:11px;
+    font-weight:600;
+}
+
+.process-admin-mmin{
+    margin-left:35px;
+    margin-top:3px;
+    color:#999;
+    font-size:8px;
+}
+
+.process-admin-actions{
+    margin-left:35px;
+    margin-top:4px;
+    display:flex;
+    gap:5px;
+}
+
+.small-btn{
+    border:0;
+    border-radius:5px;
+    padding:5px 8px;
+    font-size:9px;
+}
+
+.edit-btn{
+    background:#eef0f2;
+}
+
+.delete-process-btn{
+    background:#fceaea;
+    color:#c62828;
+}
+
+.full-btn{
+    width:100%;
+    height:39px;
+    border:0;
+    border-radius:8px;
+    margin-bottom:6px;
+    font-size:11px;
+    font-weight:600;
+}
+
+
+/* =========================
+   分享预览
+========================= */
+
+.share-preview{
+    background:#fff;
+    border-radius:10px;
+    padding:8px;
+}
+
+.share-preview canvas{
+    width:100%;
+    display:block;
+    border-radius:7px;
+}
+
+.share-tip{
+    color:#999;
+    text-align:center;
+    font-size:8px;
+    margin-top:6px;
+}
+
+
+
+
+/* =========================
+   分享菜单
+========================= */
+
+.share-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.48);
+    z-index:120;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+}
+
+.share-overlay.show{
+    display:flex;
+}
+
+.share-sheet{
+    width:100%;
+    max-width:650px;
+    padding:10px 10px calc(10px + env(safe-area-inset-bottom));
+}
+
+.share-sheet-panel{
+    background:#fff;
+    border-radius:15px;
+    overflow:hidden;
+}
+
+.share-sheet-title{
+    padding:14px 12px 5px;
+    text-align:center;
+    font-size:14px;
+    font-weight:700;
+}
+
+.share-sheet-subtitle{
+    padding:0 14px 12px;
+    text-align:center;
+    color:#999;
+    font-size:10px;
+}
+
+.share-option{
+    width:100%;
+    height:54px;
+    border:0;
+    border-top:1px solid #eee;
+    background:#fff;
+    color:#222;
+    font-size:14px;
+    font-weight:600;
+}
+
+.share-option:active{
+    background:#f4f5f6;
+}
+
+.share-loading-dot{
+    padding:0 14px 14px;
+    text-align:center;
+    color:#999;
+    font-size:18px;
+    letter-spacing:4px;
+    line-height:1;
+    animation:sharePulse 1s ease-in-out infinite;
+}
+
+@keyframes sharePulse{
+    0%,100%{opacity:.35;transform:translateY(0);}
+    50%{opacity:1;transform:translateY(-2px);}
+}
+
+.share-cancel{
+    width:100%;
+    height:50px;
+    margin-top:8px;
+    border:0;
+    border-radius:12px;
+    background:#fff;
+    color:#555;
+    font-size:14px;
+    font-weight:700;
+}
+
+
+/* =========================
+   小屏适配
+========================= */
+
+@media(max-width:380px){
+
+    .container{
+        padding:6px;
+    }
+
+    .efficiency-card{
+        padding:11px;
+    }
+
+    .efficiency-main{
+        gap:11px;
+    }
+
+    .circle-box{
+        width:125px;
+        height:125px;
+        flex-basis:125px;
+    }
+
+    .circle-box svg{
+        width:125px;
+        height:125px;
+    }
+
+    .circle-percent{
+        font-size:26px;
+    }
+
+    .eff-formula{
+        font-size:16px;
+    }
+
+    .compact-table{
+        font-size:10px;
+    }
+    .compact-table .name-cell{font-size:13px;}
+    .compact-table td.quantity-editable{font-size:12px;}
+
+    .compact-table th{
+        height:24px;
+    }
+
+    .compact-table td{
+        height:29px;
+    }
+
+    .col-no{width:30px;}
+    .col-qty{width:49px;}
+    .col-mmin{width:45px;}
+    .col-min{width:51px;}
+    .col-delete{width:27px;}
+
+    .calendar-day{
+        height:53px;
+    }
+
+}
+
+@media(max-width:340px){
+
+    .circle-box{
+        width:128px;
+        height:128px;
+        flex-basis:128px;
+    }
+
+    .circle-box svg{
+        width:128px;
+        height:128px;
+    }
+
+    .circle-percent{
+        font-size:24px;
+    }
+
+    .eff-formula{
+        font-size:14px;
+    }
+
+    .compact-table{
+        font-size:9px;
+    }
+    .compact-table .name-cell{font-size:13px;}
+    .compact-table td.quantity-editable{font-size:12px;}
+
+}
+
+/* 今日记录中的项目名称：恢复清晰、易读的字体层级 */
+.process-project-label{color:#667085;font-size:10px;line-height:13px;font-weight:400;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.compact-table td.record-row-clickable{cursor:pointer;touch-action:manipulation;}\n.record-editable{cursor:pointer;user-select:none;-webkit-user-select:none;}
+.compact-table td.quantity-editable{font-size:13px;font-weight:400;cursor:pointer;user-select:none;-webkit-user-select:none;}
+.compact-table td.record-editable:active,.compact-table td.quantity-editable:active{background:#f3f5f7;}
+
+.project-admin-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.project-admin-actions .small-btn{padding:4px 7px;font-size:10px;border-radius:6px;}
+.edit-project-btn{background:#fff;border:1px solid #cfd8e3;color:#333;}
+.delete-project-btn{background:#fff0f0;border:1px solid #f1c5c5;color:#c62828;}
+.project-admin-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* 工序管理：项目默认折叠，点击项目才显示工序 */
+.process-admin-project{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#1677ff;font-weight:700;margin:9px 0 4px;padding:10px 9px;background:#f2f7ff;border-radius:9px;cursor:pointer;}
+.process-admin-project .admin-arrow{font-size:15px;color:#7b8798;transition:transform .18s ease;}
+.process-admin-project.open .admin-arrow{transform:rotate(90deg);}
+.process-admin-items{display:none;padding-left:4px;}
+.process-admin-items.open{display:block;}
+
+.record-row-clickable{cursor:pointer;touch-action:manipulation;}\n.record-editable{cursor:pointer;user-select:none;-webkit-user-select:none;}
+.record-editable:active{opacity:.65;}
+.delete-btn{user-select:none;-webkit-user-select:none;}
+
+/* v7: 今日记录字体层级 - 工序/数量仅略大于项目，不加粗 */
+.compact-table .name-cell { font-size: 11px !important; font-weight: 400 !important; }
+.compact-table td.quantity-editable { font-size: 10px !important; font-weight: 400 !important; }
+.compact-table td.record-editable { font-weight: 400 !important; }
+.process-project-label { font-size: 10px !important; font-weight: 400 !important; line-height: 13px; }
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     顶部
+========================= -->
+
+<header class="header">
+
+    <div class="header-row">
+
+        <div>
+
+            <div class="header-title">
+                个人效率计算
+            </div>
+
+            <div id="headerDate" class="header-date"></div>
+
+        </div>
+
+        <button
+            class="settings-btn"
+            onclick="openProcessAdmin()">
+
+            ⚙ 工序管理
+
+        </button>
+
+    </div>
+
+</header>
+
+
+<!-- =========================================================
+     首页
+========================================================= -->
+
+<section id="pageToday" class="page active">
+
+    <main class="container">
+
+
+        <!-- 今日效率 -->
+
+        <div class="efficiency-card">
+
+            <div class="efficiency-main">
+
+
+                <div class="circle-box">
+
+                    <svg viewBox="0 0 118 118">
+
+                        <circle
+                            class="circle-bg"
+                            cx="59"
+                            cy="59"
+                            r="50">
+                        </circle>
+
+                        <circle
+                            id="circleProgress"
+                            class="circle-progress"
+                            cx="59"
+                            cy="59"
+                            r="50">
+                        </circle>
+
+                    </svg>
+
+                    <div class="circle-center">
+
+                        <div
+                            id="todayEfficiency"
+                            class="circle-percent">
+
+                            0.0%
+
+                        </div>
+
+                        <div class="circle-label">
+                            今日效率
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="eff-info">
+
+                    <div class="eff-title">
+                        今日效率计算
+                    </div>
+
+                    <div
+                        id="effFormula"
+                        class="eff-formula">
+
+                        0 ÷ 660 = 0.0%
+
+                    </div>
+
+                    <div
+                        id="effDetail"
+                        class="eff-detail">
+
+                        标准分钟：0.0分钟
+
+                    </div>
+
+                    <div class="eff-work">
+                        实际工作：660分钟（11小时）
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- 今日记录 -->
+
+        <div class="record-card">
+
+            <div class="today-header">
+
+                <div class="today-title">
+                    今日记录
+                </div>
+
+                <div
+                    id="recordCount"
+                    class="record-count">
+
+                    0条
+
+                </div>
+
+            </div>
+
+
+            <div class="table-wrap">
+
+                <table class="compact-table">
+
+                    <colgroup>
+
+                        <col class="col-no">
+                        <col class="col-name">
+                        <col class="col-qty">
+                        <col class="col-mmin">
+                        <col class="col-min">
+                        <col class="col-delete">
+
+                    </colgroup>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>编号</th>
+
+                            <th style="text-align:left">
+                                工序
+                            </th>
+
+                            <th>数量</th>
+
+                            <th>M-MIN</th>
+
+                            <th>标准分</th>
+
+                            <th>删</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="todayRecords"></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</section>
+
+
+<!-- =========================================================
+     今天 / 日历
+========================================================= -->
+
+<section id="pageCalendar" class="page">
+
+    <main class="container">
+
+
+        <div class="calendar-header">
+
+            <div class="calendar-header-top">
+
+                <div>
+
+                    <div class="calendar-title">
+                        今天
+                    </div>
+
+                    <div class="calendar-sub">
+                        点击日期查看当天效率和工作详情
+                    </div>
+
+                </div>
+
+                <button
+                    class="settings-btn"
+                    onclick="goBackToToday()">
+
+                    返回首页
+
+                </button>
+
+            </div>
+
+
+            <div class="calendar-month-bar">
+
+                <button
+                    class="month-btn"
+                    onclick="changeMonth(-1)">
+
+                    ‹
+
+                </button>
+
+                <div
+                    id="monthTitle"
+                    class="month-title">
+
+                </div>
+
+                <button
+                    class="month-btn"
+                    onclick="changeMonth(1)">
+
+                    ›
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- 日历 -->
+
+        <div class="calendar-card">
+
+            <div class="week-header">
+
+                <div>日</div>
+                <div>一</div>
+                <div>二</div>
+                <div>三</div>
+                <div>四</div>
+                <div>五</div>
+                <div>六</div>
+
+            </div>
+
+            <div
+                id="calendarGrid"
+                class="calendar-grid">
+
+            </div>
+
+        </div>
+
+
+        <!-- 月统计 -->
+
+        <div class="month-summary">
+
+            <div class="month-summary-title">
+                本月统计
+            </div>
+
+            <div class="month-summary-grid">
+
+                <div class="summary-item">
+
+                    <div class="summary-label">
+                        有记录天数
+                    </div>
+
+                    <div
+                        id="monthDays"
+                        class="summary-value">
+
+                        0
+
+                    </div>
+
+                </div>
+
+
+                <div class="summary-item">
+
+                    <div class="summary-label">
+                        平均效率
+                    </div>
+
+                    <div
+                        id="monthAvg"
+                        class="summary-value">
+
+                        0.0%
+
+                    </div>
+
+                </div>
+
+
+                <div class="summary-item">
+
+                    <div class="summary-label">
+                        最高效率
+                    </div>
+
+                    <div
+                        id="monthMax"
+                        class="summary-value">
+
+                        0.0%
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- 当天详情 -->
+
+        <div
+            id="calendarDetail"
+            class="detail-card hidden">
+
+        </div>
+
+    </main>
+
+</section>
+
+
+<!-- =========================================================
+     底部
+========================================================= -->
+
+<div class="bottom-actions">
+
+    <button
+        class="bottom-action today-action"
+        onclick="openCalendar()">
+
+        今天
+
+    </button>
+
+    <button
+        class="bottom-action add-action"
+        onclick="openAddRecord()">
+
+        ＋ 添加工序
+
+    </button>
+
+    <button
+        class="bottom-action share-action"
+        onclick="shareToday()">
+
+        ⇧ 分享
+
+    </button>
+
+</div>
+
+
+<!-- =========================================================
+     添加工序
+========================================================= -->
+
+<div
+    id="addRecordOverlay"
+    class="overlay"
+    onclick="closeAddRecordBackground(event)">
+
+    <div class="modal">
+
+        <div id="addRecordTitle" class="modal-title">
+            添加工序
+        </div>
+
+        <input id="editingRecordId" type="hidden" value="">
+
+
+        <label class="form-label">
+            项目
+        </label>
+        <select id="recordProjectSelect" class="select-box"></select>
+
+        <label class="form-label">
+            工序
+        </label>
+
+        <select
+            id="processSelect"
+            class="select-box">
+        </select>
+
+        <div
+            id="mminValue"
+            class="mmin-hint">
+
+            M-MIN：-
+
+        </div>
+
+        <label class="form-label">
+            完成数量
+        </label>
+
+        <input
+            id="quantityInput"
+            class="number-input"
+            type="number"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            placeholder="请输入完成数量">
+
+        <div class="modal-buttons">
+
+            <button
+                class="modal-btn primary"
+                onclick="saveTodayRecord()">
+
+                保存记录
+
+            </button>
+
+            <button
+                class="modal-btn secondary"
+                onclick="closeAddRecord()">
+
+                取消
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     工序管理
+========================================================= -->
+
+<div
+    id="processAdminOverlay"
+    class="overlay"
+    onclick="closeProcessAdminBackground(event)">
+
+    <div class="modal">
+
+        <div
+            class="header-row"
+            style="margin-bottom:9px">
+
+            <div
+                class="modal-title"
+                style="margin:0">
+
+                工序管理
+
+            </div>
+
+            <button
+                class="settings-btn"
+                onclick="closeProcessAdmin()">
+
+                关闭
+
+            </button>
+
+        </div>
+
+
+        <div class="admin-action-row">
+            <button
+                class="full-btn admin-half-btn"
+                style="background:#111;color:#fff"
+                onclick="openProcessEditor()">
+                ＋ 添加新工序
+            </button>
+            <button
+                class="full-btn admin-half-btn"
+                style="background:#eef0f2;color:#222"
+                onclick="openProjectEditor()">
+                ＋ 新增项目
+            </button>
+        </div>
+
+
+        <div id="processAdminList"></div>
+
+
+        <button
+            class="full-btn"
+            style="background:#eef0f2"
+            onclick="exportData()">
+
+            导出项目
+
+        </button>
+
+
+
+
+        <input
+            id="importFile"
+            type="file"
+            accept=".json"
+            style="display:none"
+            onchange="importData(event)">
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     项目编辑
+========================================================= -->
+
+<div
+    id="projectEditorOverlay"
+    class="overlay"
+    onclick="closeProjectEditorBackground(event)">
+
+    <div class="modal">
+
+        <div id="projectEditorTitle" class="modal-title">新增项目</div>
+
+        <label class="form-label">项目名称</label>
+
+        <input
+            id="projectNameInput"
+            class="number-input"
+            type="text"
+            placeholder="请输入项目名称"
+            autocomplete="off">
+
+        <div class="modal-buttons">
+
+            <button
+                class="modal-btn primary"
+                onclick="saveProject()">
+                保存
+            </button>
+
+            <button
+                id="deleteProjectEditorBtn"
+                class="modal-btn secondary"
+                style="display:none;background:#ffecec;color:#c62828"
+                onclick="deleteEditingProject()">
+                删除项目
+            </button>
+
+            <button
+                class="modal-btn secondary"
+                onclick="closeProjectEditor()">
+                取消
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     工序编辑
+========================================================= -->
+
+<div
+    id="processEditorOverlay"
+    class="overlay"
+    onclick="closeProcessEditorBackground(event)">
+
+    <div class="modal">
+
+        <div
+            id="processEditorTitle"
+            class="modal-title">
+
+            添加工序
+
+        </div>
+
+        <label class="form-label">
+            所属项目
+        </label>
+        <select id="processProjectSelect" class="select-box"></select>
+
+        <label class="form-label">
+            工序名称
+        </label>
+
+        <input
+            id="processNameInput"
+            class="number-input"
+            type="text"
+            placeholder="请输入工序名称">
+
+        <label class="form-label">
+            M-MIN
+        </label>
+
+        <input
+            id="processMminInput"
+            class="number-input"
+            type="number"
+            min="0"
+            step="0.001"
+            inputmode="decimal"
+            placeholder="例如：0.400">
+
+        <div class="modal-buttons">
+
+            <button
+                class="modal-btn primary"
+                onclick="saveProcess()">
+
+                保存
+
+            </button>
+
+            <button
+                class="modal-btn secondary"
+                onclick="closeProcessEditor()">
+
+                取消
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="shareOverlay" class="share-overlay" onclick="closeShareBackground(event)">
+    <div class="share-sheet">
+        <div class="share-sheet-panel">
+            <div id="shareSheetTitle" class="share-sheet-title">正在准备分享</div>
+            <div id="shareSheetSubtitle" class="share-sheet-subtitle">正在生成效率报告图片，请稍候…</div>
+            <div class="share-loading-dot" aria-hidden="true">•••</div>
+        </div>
+        <button class="share-cancel" type="button" onclick="closeShareMenu();pendingShareDate=null;shareGenerating=false;">取消</button>
+    </div>
+</div>
+
+<script>
+
+/* =========================================================
+   参数
+========================================================= */
+
+const WORK_MINUTES = 660;
+
+const STORAGE_KEY = "personal_efficiency_tool_v8";
+
+let editingProcessIndex = -1;
+
+let calendarDate = new Date();
+
+let selectedDetailDate = null;
+
+
+/* =========================================================
+   默认工序
+========================================================= */
+
+const INITIAL_PROJECTS = [
+    {
+        "id": 1,
+        "name": "99VC1518326G"
+    },
+    {
+        "id": 2,
+        "name": "99VI4496141G/99VI4496143G（宽板）"
+    },
+    {
+        "id": 3,
+        "name": "99VI4496142G/99VI4496144G（窄板）"
+    },
+    {
+        "id": 4,
+        "name": "99VI4345831G"
+    },
+    {
+        "id": 5,
+        "name": "99VI4345832G"
+    }
+];
+
+const INITIAL_PROCESSES = [
+    {
+        "projectId": 1,
+        "no": "01",
+        "name": "贴锅仔片（PCB板1651）",
+        "mmin": 0.4
+    },
+    {
+        "projectId": 1,
+        "no": "02",
+        "name": "贴标签",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 1,
+        "no": "03",
+        "name": "贴海绵（蜂鸣器）",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 1,
+        "no": "04",
+        "name": "测试",
+        "mmin": 0.5
+    },
+    {
+        "projectId": 1,
+        "no": "05",
+        "name": "主板焊接",
+        "mmin": 0.95
+    },
+    {
+        "projectId": 1,
+        "no": "06",
+        "name": "主板FA",
+        "mmin": 0.25
+    },
+    {
+        "projectId": 1,
+        "no": "07",
+        "name": "预加工马达+R型螺杆+量尺寸",
+        "mmin": 0.3
+    },
+    {
+        "projectId": 1,
+        "no": "08",
+        "name": "软板焊接（开关/马达）",
+        "mmin": 0.65
+    },
+    {
+        "projectId": 1,
+        "no": "09",
+        "name": "软板FA",
+        "mmin": 0.17
+    },
+    {
+        "projectId": 1,
+        "no": "10",
+        "name": "预加工外壳（2个弹片）",
+        "mmin": 0.45
+    },
+    {
+        "projectId": 1,
+        "no": "11",
+        "name": "安装塑料壳（马达）",
+        "mmin": 0.25
+    },
+    {
+        "projectId": 1,
+        "no": "12",
+        "name": "软板点RTV胶",
+        "mmin": 0.45
+    },
+    {
+        "projectId": 1,
+        "no": "13",
+        "name": "壳内组装（一对一打/贴标签+产品装入外壳）",
+        "mmin": 0.5
+    },
+    {
+        "projectId": 1,
+        "no": "14",
+        "name": "打外壳标签",
+        "mmin": 0.05
+    },
+    {
+        "projectId": 1,
+        "no": "15",
+        "name": "贴外壳长方形标签",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 1,
+        "no": "16",
+        "name": "壳内组装+锁螺丝 11VC051329BG/10VC513285BG/10VC1526142G",
+        "mmin": 0.6
+    },
+    {
+        "projectId": 1,
+        "no": "17",
+        "name": "壳内组装+安装连接软板",
+        "mmin": 1.0
+    },
+    {
+        "projectId": 1,
+        "no": "18",
+        "name": "壳外组装+涂白油",
+        "mmin": 1.8
+    },
+    {
+        "projectId": 1,
+        "no": "19",
+        "name": "尺寸测量",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 1,
+        "no": "20",
+        "name": "外观检验",
+        "mmin": 0.6
+    },
+    {
+        "projectId": 1,
+        "no": "21",
+        "name": "成品测试1",
+        "mmin": 1.0
+    },
+    {
+        "projectId": 1,
+        "no": "22",
+        "name": "壳内点RTV胶",
+        "mmin": 0.6
+    },
+    {
+        "projectId": 1,
+        "no": "23",
+        "name": "灌胶/产品静置",
+        "mmin": 1.1
+    },
+    {
+        "projectId": 1,
+        "no": "24",
+        "name": "成品测试2",
+        "mmin": 1.0
+    },
+    {
+        "projectId": 1,
+        "no": "25",
+        "name": "简易测试+量测",
+        "mmin": 0.66
+    },
+    {
+        "projectId": 1,
+        "no": "26",
+        "name": "组装小后壳",
+        "mmin": 0.1
+    },
+    {
+        "projectId": 1,
+        "no": "27",
+        "name": "灌胶后检验",
+        "mmin": 0.4
+    },
+    {
+        "projectId": 1,
+        "no": "28",
+        "name": "预加工弹簧/塑料件 10VC1629925G/11VC151677BG/11V15167751G",
+        "mmin": 0.2
+    },
+    {
+        "projectId": 2,
+        "no": "01",
+        "name": "超声波压焊（外壳+导光板）",
+        "mmin": 0.35
+    },
+    {
+        "projectId": 2,
+        "no": "02",
+        "name": "预加工外壳（RFID光导安装热熔）",
+        "mmin": 0.2
+    },
+    {
+        "projectId": 2,
+        "no": "03",
+        "name": "贴产品标签",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 2,
+        "no": "04",
+        "name": "加锡堵孔",
+        "mmin": 0.583
+    },
+    {
+        "projectId": 2,
+        "no": "05",
+        "name": "贴锅仔片",
+        "mmin": 0.6
+    },
+    {
+        "projectId": 2,
+        "no": "06",
+        "name": "贴蜂鸣器垫圈",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 2,
+        "no": "07",
+        "name": "半成品测试",
+        "mmin": 2.2
+    },
+    {
+        "projectId": 2,
+        "no": "08",
+        "name": "半成品检验",
+        "mmin": 0.5
+    },
+    {
+        "projectId": 2,
+        "no": "09",
+        "name": "预加工框架（贴密封贴）",
+        "mmin": 0.2
+    },
+    {
+        "projectId": 2,
+        "no": "10",
+        "name": "预加工贴软板",
+        "mmin": 0.617
+    },
+    {
+        "projectId": 2,
+        "no": "11",
+        "name": "组装框架+打/贴标签",
+        "mmin": 1.2
+    },
+    {
+        "projectId": 2,
+        "no": "12",
+        "name": "打/贴外壳标签",
+        "mmin": 0.875
+    },
+    {
+        "projectId": 2,
+        "no": "13",
+        "name": "点RTV胶",
+        "mmin": 3.5
+    },
+    {
+        "projectId": 2,
+        "no": "14",
+        "name": "组装临时外壳",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 2,
+        "no": "15",
+        "name": "成品测试1",
+        "mmin": 0.9
+    },
+    {
+        "projectId": 2,
+        "no": "16",
+        "name": "灌胶/产品静置",
+        "mmin": 1.5
+    },
+    {
+        "projectId": 2,
+        "no": "17",
+        "name": "拆临时外壳+检验",
+        "mmin": 0.4
+    },
+    {
+        "projectId": 2,
+        "no": "18",
+        "name": "组装外壳",
+        "mmin": 0.45
+    },
+    {
+        "projectId": 2,
+        "no": "19",
+        "name": "外壳压合",
+        "mmin": 1.0
+    },
+    {
+        "projectId": 2,
+        "no": "20",
+        "name": "成品测试2",
+        "mmin": 0.9
+    },
+    {
+        "projectId": 2,
+        "no": "21",
+        "name": "预加工（小后壳+螺丝+螺帽）",
+        "mmin": 0.34
+    },
+    {
+        "projectId": 2,
+        "no": "22",
+        "name": "组装安装小后壳+打螺丝（2颗）",
+        "mmin": 0.2
+    },
+    {
+        "projectId": 2,
+        "no": "23",
+        "name": "灌胶后检验+GO NO GO测量",
+        "mmin": 0.6
+    },
+    {
+        "projectId": 3,
+        "no": "01",
+        "name": "超声波压焊（外壳+导光板）",
+        "mmin": 0.45
+    },
+    {
+        "projectId": 3,
+        "no": "02",
+        "name": "预加工外壳（RFID光导安装热熔）",
+        "mmin": 0.2
+    },
+    {
+        "projectId": 3,
+        "no": "03",
+        "name": "3171打/贴产品标签",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 3,
+        "no": "04",
+        "name": "3172打/贴产品标签",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 3,
+        "no": "05",
+        "name": "3171板加锡堵孔",
+        "mmin": 0.75
+    },
+    {
+        "projectId": 3,
+        "no": "06",
+        "name": "3171产品贴按键（锅仔片）",
+        "mmin": 0.4
+    },
+    {
+        "projectId": 3,
+        "no": "07",
+        "name": "贴蜂鸣器垫圈",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 3,
+        "no": "08",
+        "name": "3171/3172板半成品测试",
+        "mmin": 3.0
+    },
+    {
+        "projectId": 3,
+        "no": "09",
+        "name": "半成品检验",
+        "mmin": 0.8
+    },
+    {
+        "projectId": 3,
+        "no": "10",
+        "name": "预加工框架（框架+3颗料）",
+        "mmin": 0.65
+    },
+    {
+        "projectId": 3,
+        "no": "11",
+        "name": "预加工贴软板",
+        "mmin": 0.5
+    },
+    {
+        "projectId": 3,
+        "no": "12",
+        "name": "组装框架+打/贴标签",
+        "mmin": 1.8
+    },
+    {
+        "projectId": 3,
+        "no": "13",
+        "name": "点RTV胶（3171长板）",
+        "mmin": 4.0
+    },
+    {
+        "projectId": 3,
+        "no": "14",
+        "name": "点RTV胶（3172板）",
+        "mmin": 2.5
+    },
+    {
+        "projectId": 3,
+        "no": "15",
+        "name": "组装临时外壳",
+        "mmin": 0.15
+    },
+    {
+        "projectId": 3,
+        "no": "16",
+        "name": "打/贴外壳标签",
+        "mmin": 0.85
+    },
+    {
+        "projectId": 3,
+        "no": "17",
+        "name": "成品测试1",
+        "mmin": 1.1
+    },
+    {
+        "projectId": 3,
+        "no": "18",
+        "name": "灌胶/产品静置",
+        "mmin": 5.0
+    },
+    {
+        "projectId": 3,
+        "no": "19",
+        "name": "拆临时外壳+检验",
+        "mmin": 0.4
+    },
+    {
+        "projectId": 3,
+        "no": "20",
+        "name": "组装外壳",
+        "mmin": 0.45
+    },
+    {
+        "projectId": 3,
+        "no": "21",
+        "name": "成品测试2",
+        "mmin": 1.1
+    },
+    {
+        "projectId": 3,
+        "no": "22",
+        "name": "预加工（小后壳+螺丝+螺帽）",
+        "mmin": 0.34
+    },
+    {
+        "projectId": 3,
+        "no": "23",
+        "name": "安装小后壳+打螺丝（2颗）",
+        "mmin": 0.2
+    },
+    {
+        "projectId": 3,
+        "no": "24",
+        "name": "灌胶后检验+GO NO GO测量",
+        "mmin": 0.6
+    },
+    {
+        "projectId": 4,
+        "no": "01",
+        "name": "选焊（焊接）",
+        "mmin": 0.5
+    },
+    {
+        "projectId": 4,
+        "no": "02",
+        "name": "FA",
+        "mmin": 0.3
+    },
+    {
+        "projectId": 4,
+        "no": "03",
+        "name": "贴标签",
+        "mmin": 0.12
+    },
+    {
+        "projectId": 4,
+        "no": "04",
+        "name": "组装",
+        "mmin": 0.5
+    },
+    {
+        "projectId": 4,
+        "no": "05",
+        "name": "FA",
+        "mmin": 0.2
+    },
+    {
+        "projectId": 5,
+        "no": "01",
+        "name": "焊接Cable线",
+        "mmin": 1.65
+    },
+    {
+        "projectId": 5,
+        "no": "02",
+        "name": "PD FA",
+        "mmin": 0.5
+    },
+    {
+        "projectId": 5,
+        "no": "03",
+        "name": "组装1",
+        "mmin": 2.0
+    },
+    {
+        "projectId": 5,
+        "no": "04",
+        "name": "组装2",
+        "mmin": 0.5
+    },
+    {
+        "projectId": 5,
+        "no": "05",
+        "name": "PD FA",
+        "mmin": 0.6
+    },
+    {
+        "projectId": 5,
+        "no": "06",
+        "name": "灌胶/产品静置",
+        "mmin": 1.4
+    },
+    {
+        "projectId": 5,
+        "no": "07",
+        "name": "灌胶后FA",
+        "mmin": 0.32
+    }
+];
+
+
+/* =========================================================
+   数据库
+========================================================= */
+
+let db = loadDatabase();
+
+
+function loadDatabase(){
+    try{
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if(saved){
+            const data = JSON.parse(saved);
+            if(Array.isArray(data.processes) && data.records && typeof data.records === "object"){
+                data.projects = Array.isArray(data.projects) ? data.projects : INITIAL_PROJECTS.map(p => ({...p}));
+                const knownProjects = new Set(data.projects.map(p => String(p.id)));
+                INITIAL_PROJECTS.forEach(p => {
+                    const existing = data.projects.find(x => String(x.id) === String(p.id));
+                    if(existing) existing.name = p.name;
+                    else if(!knownProjects.has(String(p.id))) data.projects.push({...p});
+                });
+                // 旧版本记录默认归入原来的第一个项目。
+                data.processes = data.processes.map(p => ({...p, projectId:Number(p.projectId)||1}));
+                // 与最新版《项目工序表》同步：缺少的工序补入；已有的内置项目工序按最新版名称/M-MIN更新。
+                const processKeys = new Set(data.processes.map(p => `${Number(p.projectId)}:${String(p.no)}`));
+                INITIAL_PROCESSES.forEach(p => {
+                    const key = `${Number(p.projectId)}:${String(p.no)}`;
+                    const existing = data.processes.find(x => `${Number(x.projectId)}:${String(x.no)}` === key);
+                    if(existing){
+                        existing.name = p.name;
+                        existing.mmin = Number(p.mmin);
+                    }else{
+                        data.processes.push({...p});
+                    }
+                    processKeys.add(key);
+                });
+                Object.values(data.records).forEach(list => (Array.isArray(list)?list:[]).forEach(r => {
+                    if(!r.projectId) r.projectId = Number(r.projectId)||1;
+                    const match = data.processes.find(p => String(p.no)===String(r.processNo) && Number(p.projectId)===Number(r.projectId))
+                        || data.processes.find(p => String(p.no)===String(r.processNo));
+                    if(match){ r.projectId = Number(match.projectId); r.processName = r.processName || match.name; r.mmin = Number(match.mmin); }
+                }));
+                return data;
+            }
+        }
+    }catch(error){ console.log(error); }
+    return {
+        projects: INITIAL_PROJECTS.map(p => ({...p})),
+        processes: INITIAL_PROCESSES.map(p => ({...p})),
+        records:{}
+    };
+}
+
+function saveDatabase(){
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(db)
+    );
+
+}
+
+
+/* =========================================================
+   日期
+========================================================= */
+
+function getTodayKey(){
+
+    const d = new Date();
+
+    return d.getFullYear()
+        + "-"
+        + String(d.getMonth()+1).padStart(2,"0")
+        + "-"
+        + String(d.getDate()).padStart(2,"0");
+
+}
+
+
+function formatDate(date){
+
+    const p = date.split("-");
+
+    return p[0]
+        + "/"
+        + p[1]
+        + "/"
+        + p[2];
+
+}
+
+
+function getRecords(date){
+
+    if(!db.records[date]){
+
+        db.records[date] = [];
+
+    }
+
+    return db.records[date];
+
+}
+
+
+/* =========================================================
+   计算
+========================================================= */
+
+function calculateTotalMinutes(date){
+
+    const records =
+        db.records[date] || [];
+
+    return records.reduce(
+        (sum,r) =>
+            sum + Number(r.standardMinutes),
+        0
+    );
+
+}
+
+
+function calculateEfficiency(date){
+
+    return calculateTotalMinutes(date)
+        /
+        WORK_MINUTES
+        *
+        100;
+
+}
+
+
+function calculateTotalQuantity(date){
+
+    const records =
+        db.records[date] || [];
+
+    return records.reduce(
+        (sum,r) =>
+            sum + Number(r.quantity),
+        0
+    );
+
+}
+
+
+/* =========================================================
+   首页
+========================================================= */
+
+function renderToday(){
+
+    const date =
+        getTodayKey();
+
+    const total =
+        calculateTotalMinutes(date);
+
+    const efficiency =
+        total / WORK_MINUTES * 100;
+
+
+    const efficiencyEl = document.getElementById("todayEfficiency");
+    efficiencyEl.textContent = efficiency.toFixed(1) + "%";
+    efficiencyEl.classList.toggle("percent-4digit", Math.abs(efficiency) >= 1000);
+    efficiencyEl.classList.toggle("percent-5digit", Math.abs(efficiency) >= 10000);
+
+
+    document.getElementById(
+        "effFormula"
+    ).textContent =
+        total.toFixed(1)
+        + " ÷ "
+        + WORK_MINUTES
+        + " = "
+        + efficiency.toFixed(1)
+        + "%";
+
+
+    document.getElementById(
+        "effDetail"
+    ).textContent =
+        "标准分钟：" +
+        total.toFixed(1) +
+        "分钟";
+
+
+    document.getElementById(
+        "recordCount"
+    ).textContent =
+        getRecords(date).length + "条";
+
+
+    updateCircle(efficiency);
+
+    renderTodayRecords();
+
+}
+
+
+function updateCircle(efficiency){
+
+    const circle =
+        document.getElementById(
+            "circleProgress"
+        );
+
+    const radius = 50;
+
+    const circumference =
+        2 * Math.PI * radius;
+
+    circle.style.strokeDasharray =
+        circumference;
+
+
+    const percent =
+        Math.min(
+            Math.max(efficiency,0),
+            100
+        );
+
+
+    const offset =
+        circumference *
+        (1 - percent / 100);
+
+
+    circle.style.strokeDashoffset =
+        offset;
+
+}
+
+
+/* =========================================================
+   首页记录表
+========================================================= */
+
+function renderTodayRecords(){
+
+    const tbody = document.getElementById("todayRecords");
+    const records = getRecords(getTodayKey());
+
+    tbody.innerHTML = "";
+
+    if(records.length === 0){
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="empty">今天还没有记录</td>
+            </tr>`;
+        return;
+    }
+
+    records.forEach(record => {
+
+        const tr = document.createElement("tr");
+
+        // 整行均可点击进入修改；删除按钮通过 stopPropagation() 排除。
+        tr.className = "record-row-clickable";
+        tr.title = "点击此行修改工序记录";
+        tr.onclick = () => editTodayRecord(record.id);
+
+        tr.innerHTML = `
+            <td class="record-editable">${escapeHtml(record.processNo)}</td>
+
+            <td class="name-cell record-editable">
+                <div>${escapeHtml(record.processName)}</div>
+                <div class="process-project-label">
+                    ${escapeHtml((db.projects.find(p=>Number(p.id)===Number(record.projectId))||{}).name || "原有项目")}
+                </div>
+            </td>
+
+            <td class="quantity-editable record-editable">
+                ${formatNumber(record.quantity)}
+            </td>
+
+            <td>${Number(record.mmin).toFixed(3)}</td>
+
+            <td>${Number(record.standardMinutes).toFixed(1)}</td>
+
+            <td>
+                <button
+                    class="delete-btn"
+                    onclick="event.stopPropagation(); deleteTodayRecord('${record.id}')">
+                    ×
+                </button>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+
+
+/* =========================================================
+   编辑今日记录
+========================================================= */
+
+function editTodayRecord(id){
+    const records = getRecords(getTodayKey());
+    const record = records.find(r => String(r.id) === String(id));
+    if(!record){ alert("找不到这条记录"); return; }
+    document.getElementById("editingRecordId").value = record.id;
+    document.getElementById("addRecordTitle").textContent = "修改工序记录";
+    renderProjectSelect(record.projectId || 1);
+    renderProcessSelect(record.projectId || 1, record.processNo);
+    document.getElementById("quantityInput").value = record.quantity;
+    updateMmin();
+    document.getElementById("addRecordOverlay").classList.add("show");
+}
+
+function saveTodayRecord(){
+    const editingId = document.getElementById("editingRecordId").value;
+    const process = getSelectedProcess();
+    const quantity = Number(document.getElementById("quantityInput").value);
+    if(!process){ alert("请选择项目和工序"); return; }
+    if(!quantity || quantity<=0){ alert("请输入正确的完成数量"); return; }
+    if(editingId){
+        const record = getRecords(getTodayKey()).find(r => String(r.id)===String(editingId));
+        if(!record){ alert("找不到这条记录"); return; }
+        record.projectId = Number(process.projectId);
+        record.processNo = process.no;
+        record.processName = process.name;
+        record.mmin = Number(process.mmin);
+        record.quantity = quantity;
+        record.standardMinutes = quantity * Number(process.mmin);
+    }else{
+        addTodayRecord();
+        return;
+    }
+    saveDatabase();
+    closeAddRecord();
+    document.getElementById("editingRecordId").value = "";
+    renderAll();
+}
+
+function renderProjectSelect(selectedId){
+    const select = document.getElementById("recordProjectSelect");
+    select.innerHTML = db.projects.map(p => `<option value="${p.id}" ${Number(p.id)===Number(selectedId)?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
+    select.onchange = () => {
+        renderProcessSelect(Number(select.value));
+        updateMmin();
+    };
+}
+
+function openAddRecord(){
+    document.getElementById("editingRecordId").value = "";
+    document.getElementById("addRecordTitle").textContent = "添加工序";
+    document.getElementById("quantityInput").value = "";
+    renderProjectSelect(db.projects[0]?.id || 1);
+    renderProcessSelect(db.projects[0]?.id || 1);
+    document.getElementById("addRecordOverlay").classList.add("show");
+}
+
+function closeAddRecord(){ document.getElementById("addRecordOverlay").classList.remove("show"); }
+function closeAddRecordBackground(event){ if(event.target.id === "addRecordOverlay") closeAddRecord(); }
+
+function renderProcessSelect(projectId, selectedNo){
+    const select = document.getElementById("processSelect");
+    const list = db.processes.filter(p => Number(p.projectId)===Number(projectId));
+    select.innerHTML = "";
+    if(!list.length){
+        select.innerHTML = '<option value="">暂无工序</option>';
+    }else{
+        list.forEach(p => {
+            const option = document.createElement("option");
+            option.value = p.no;
+            option.textContent = p.no + "｜" + p.name;
+            select.appendChild(option);
+        });
+        if(selectedNo && list.some(p => String(p.no)===String(selectedNo))) select.value = selectedNo;
+    }
+    updateMmin();
+}
+
+function getSelectedProcess(){
+    const projectId = Number(document.getElementById("recordProjectSelect").value);
+    const value = document.getElementById("processSelect").value;
+    return db.processes.find(p => Number(p.projectId)===projectId && String(p.no)===String(value));
+}
+
+function updateMmin(){
+
+    const process =
+        getSelectedProcess();
+
+    const box =
+        document.getElementById(
+            "mminValue"
+        );
+
+
+    if(process){
+
+        box.textContent =
+            "M-MIN：" +
+            Number(process.mmin).toFixed(3) +
+            " 分钟/个";
+
+    }else{
+
+        box.textContent = "M-MIN：-";
+
+    }
+
+}
+
+
+/* =========================================================
+   保存今日记录
+========================================================= */
+
+function addTodayRecord(){
+
+    const process =
+        getSelectedProcess();
+
+    const quantity =
+        Number(
+            document.getElementById(
+                "quantityInput"
+            ).value
+        );
+
+
+    if(!process){
+
+        alert("请选择工序");
+
+        return;
+
+    }
+
+
+    if(!quantity || quantity <= 0){
+
+        alert("请输入正确的完成数量");
+
+        return;
+
+    }
+
+
+    const standardMinutes =
+        quantity * Number(process.mmin);
+
+
+    getRecords(getTodayKey()).push({
+
+        id:
+            Date.now()
+            +
+            "-"
+            +
+            Math.random()
+                .toString(36)
+                .slice(2),
+
+        projectId:
+            Number(document.getElementById("recordProjectSelect").value),
+
+        processNo:
+            process.no,
+
+        processName:
+            process.name,
+
+        mmin:
+            Number(process.mmin),
+
+        quantity:
+            quantity,
+
+        standardMinutes:
+            standardMinutes
+
+    });
+
+
+    saveDatabase();
+
+    closeAddRecord();
+
+    renderAll();
+
+}
+
+
+/* =========================================================
+   删除记录
+========================================================= */
+
+function deleteTodayRecord(id){
+
+    if(!confirm("确定删除这条记录吗？")){
+
+        return;
+
+    }
+
+
+    const date =
+        getTodayKey();
+
+
+    db.records[date] =
+        getRecords(date).filter(
+            r => r.id !== id
+        );
+
+
+    saveDatabase();
+
+    renderAll();
+
+}
+
+
+/* =========================================================
+   日历
+========================================================= */
+
+function goBackToToday(){
+    const active = document.querySelector(".page.active");
+    if(active && active.id === "pageCalendar" && history.length > 1){
+        history.back();
+    }else{
+        switchPage("Today");
+    }
+}
+
+function openCalendar(){
+    const active = document.querySelector(".page.active");
+    if(active && active.id === "pageCalendar"){
+        // 再次点击“今天”取消日期弹窗，回到首页。
+        selectedDetailDate = null;
+        const detail = document.getElementById("calendarDetail");
+        if(detail) detail.classList.add("hidden");
+        switchPage("Today");
+        return;
+    }
+
+    calendarDate = new Date();
+    selectedDetailDate = null;
+    switchPage("Calendar");
+    renderCalendar();
+}
+
+
+function changeMonth(offset){
+
+    calendarDate.setMonth(
+        calendarDate.getMonth() + offset
+    );
+
+    selectedDetailDate = null;
+
+    renderCalendar();
+
+}
+
+
+function renderCalendar(){
+
+    const year =
+        calendarDate.getFullYear();
+
+    const month =
+        calendarDate.getMonth();
+
+
+    document.getElementById(
+        "monthTitle"
+    ).textContent =
+        year + "年" +
+        (month + 1) +
+        "月";
+
+
+    const grid =
+        document.getElementById(
+            "calendarGrid"
+        );
+
+    grid.innerHTML = "";
+
+
+    const firstDay =
+        new Date(
+            year,
+            month,
+            1
+        ).getDay();
+
+
+    const daysInMonth =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
+
+
+    /* 月初空白 */
+
+    for(let i=0;i<firstDay;i++){
+
+        const empty =
+            document.createElement("div");
+
+        empty.className =
+            "calendar-day empty-day";
+
+        grid.appendChild(empty);
+
+    }
+
+
+    const today =
+        getTodayKey();
+
+
+    for(let day=1;day<=daysInMonth;day++){
+
+        const date =
+            year
+            +
+            "-"
+            +
+            String(month+1).padStart(2,"0")
+            +
+            "-"
+            +
+            String(day).padStart(2,"0");
+
+
+        const records =
+            db.records[date] || [];
+
+
+        const hasRecord =
+            records.length > 0;
+
+
+        const efficiency =
+            calculateEfficiency(date);
+
+
+        const cell =
+            document.createElement("div");
+
+
+        cell.className =
+            "calendar-day";
+
+
+        if(date === today){
+
+            cell.classList.add("today");
+
+        }
+
+
+        if(hasRecord){
+
+            cell.classList.add("has-record");
+
+        }
+
+
+        if(date === selectedDetailDate){
+
+            cell.classList.add("selected");
+
+        }
+
+
+        cell.innerHTML = `
+
+            <div class="day-number">
+                ${day}
+            </div>
+
+            ${
+                hasRecord
+                ?
+                `<div class="calendar-eff">
+                    ${efficiency.toFixed(1)}%
+                </div>`
+                :
+                ""
+            }
+
+        `;
+
+
+        if(hasRecord){
+
+            cell.onclick =
+                () => showCalendarDetail(date);
+
+        }
+
+
+        grid.appendChild(cell);
+
+    }
+
+
+    renderMonthSummary();
+
+}
+
+
+/* =========================================================
+   月统计
+========================================================= */
+
+function renderMonthSummary(){
+
+    const year =
+        calendarDate.getFullYear();
+
+    const month =
+        calendarDate.getMonth();
+
+
+    const prefix =
+        year
+        +
+        "-"
+        +
+        String(month+1).padStart(2,"0")
+        +
+        "-";
+
+
+    const dates =
+        Object.keys(db.records)
+            .filter(
+                d =>
+                    d.startsWith(prefix)
+                    &&
+                    db.records[d]
+                    &&
+                    db.records[d].length
+            );
+
+
+    const values =
+        dates.map(
+            d => calculateEfficiency(d)
+        );
+
+
+    const avg =
+        values.length
+        ?
+        values.reduce(
+            (a,b) => a+b,
+            0
+        ) / values.length
+        :
+        0;
+
+
+    const max =
+        values.length
+        ?
+        Math.max(...values)
+        :
+        0;
+
+
+    document.getElementById(
+        "monthDays"
+    ).textContent =
+        values.length;
+
+
+    document.getElementById(
+        "monthAvg"
+    ).textContent =
+        avg.toFixed(1) + "%";
+
+
+    document.getElementById(
+        "monthMax"
+    ).textContent =
+        max.toFixed(1) + "%";
+
+}
+
+
+/* =========================================================
+   日历当天详情
+========================================================= */
+
+function showCalendarDetail(date){
+
+    selectedDetailDate =
+        date;
+
+
+    renderCalendar();
+
+
+    const box =
+        document.getElementById(
+            "calendarDetail"
+        );
+
+
+    const records =
+        db.records[date] || [];
+
+
+    const total =
+        calculateTotalMinutes(date);
+
+
+    const efficiency =
+        calculateEfficiency(date);
+
+
+    let rows = "";
+
+
+    records.forEach(r => {
+
+        rows += `
+
+            <tr>
+
+                <td>
+                    ${escapeHtml(r.processNo)}
+                </td>
+
+                <td class="name-cell">
+                    <div>${escapeHtml(r.processName)}</div>
+                    <div class="process-project-label">${escapeHtml((db.projects.find(p=>Number(p.id)===Number(r.projectId))||{}).name || "原有项目")}</div>
+                </td>
+
+                <td>
+                    ${formatNumber(r.quantity)}
+                </td>
+
+                <td>
+                    ${Number(r.mmin).toFixed(3)}
+                </td>
+
+                <td>
+                    ${Number(r.standardMinutes).toFixed(1)}
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+
+    box.innerHTML = `
+
+        <div class="detail-header">
+
+            <div class="detail-title">
+                当天详情
+            </div>
+
+            <div class="detail-date">
+                ${formatDate(date)}
+            </div>
+
+        </div>
+
+
+        <div class="detail-eff-box">
+
+            <div class="detail-eff-label">
+
+                ${total.toFixed(1)}
+                ÷
+                660
+                =
+                效率
+
+            </div>
+
+            <div class="detail-eff-value">
+
+                ${efficiency.toFixed(1)}%
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table class="compact-table">
+
+                <colgroup>
+
+                    <col class="col-no">
+                    <col class="col-name">
+                    <col class="col-qty">
+                    <col class="col-mmin">
+                    <col class="col-min">
+
+                </colgroup>
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>编号</th>
+
+                        <th style="text-align:left">
+                            工序
+                        </th>
+
+                        <th>数量</th>
+
+                        <th>M-MIN</th>
+
+                        <th>标准分</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    ${rows}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    `;
+
+
+    box.classList.remove("hidden");
+
+
+    setTimeout(() => {
+
+        box.scrollIntoView({
+            behavior:"smooth",
+            block:"nearest"
+        });
+
+    },50);
+
+}
+
+
+/* =========================================================
+   分享今天
+========================================================= */
+
+let pendingShareDate = null;
+let shareGenerating = false;
+
+function showShareLoading(){
+    const overlay = document.getElementById("shareOverlay");
+    const title = document.getElementById("shareSheetTitle");
+    const subtitle = document.getElementById("shareSheetSubtitle");
+    if(!overlay) return;
+    if(title) title.textContent = "正在准备分享";
+    if(subtitle) subtitle.textContent = "正在生成效率报告图片，请稍候…";
+    overlay.classList.add("show");
+}
+
+function setShareLoadingText(text){
+    const subtitle = document.getElementById("shareSheetSubtitle");
+    if(subtitle) subtitle.textContent = text;
+}
+
+function shareToday(){
+    const date = getTodayKey();
+    const records = db.records[date] || [];
+
+    if(records.length === 0){
+        alert("今天还没有记录，暂时无法生成效率图。");
+        return;
+    }
+
+    if(shareGenerating) return;
+
+    pendingShareDate = date;
+    shareGenerating = true;
+    showShareLoading();
+
+    // 先让分享页面完成绘制，再开始 Canvas 图片生成，避免点击后页面瞬间卡住。
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => shareToApps());
+    });
+}
+
+function closeShareMenu(){
+    const el = document.getElementById("shareOverlay");
+    if(el) el.classList.remove("show");
+}
+
+
+function closeShareBackground(event){
+
+    if(
+        event.target.id ===
+        "shareOverlay"
+    ){
+
+        closeShareMenu();
+        pendingShareDate = null;
+        shareGenerating = false;
+
+    }
+
+}
+
+
+/* =========================================================
+   分享任意一天
+========================================================= */
+
+function getShareFile(date, callback){
+
+    const records =
+        db.records[date] || [];
+
+
+    const total =
+        calculateTotalMinutes(date);
+
+
+    const efficiency =
+        calculateEfficiency(date);
+
+
+    const canvas =
+        createShareCanvas(
+            date,
+            records,
+            total,
+            efficiency
+        );
+
+
+    canvas.toBlob(
+        blob => {
+
+            if(!blob){
+                shareGenerating = false;
+                closeShareMenu();
+                alert("图片生成失败");
+                return;
+            }
+
+
+            const file =
+                new File(
+                    [blob],
+                    "效率报告_" +
+                    date +
+                    ".jpg",
+                    {
+                        type:"image/jpeg"
+                    }
+                );
+
+
+            callback(
+                blob,
+                file,
+                efficiency
+            );
+
+        },
+        "image/jpeg",
+        0.82
+    );
+
+}
+
+
+/* =========================================================
+   调用手机系统分享
+========================================================= */
+
+async function shareToApps(){
+    const date = pendingShareDate;
+    if(!date) { shareGenerating = false; return; }
+
+    setShareLoadingText("正在生成效率报告图片，请稍候…");
+
+    getShareFile(date, async (blob, file, efficiency) => {
+        try{
+            // 图片已经生成，再关闭加载页并打开系统分享面板。
+            closeShareMenu();
+
+            if(window.AndroidShare && typeof window.AndroidShare.shareImage === "function"){
+                const reader = new FileReader();
+                reader.onloadend = function(){
+                    const ok = window.AndroidShare.shareImage(reader.result, file.name);
+                    shareGenerating = false;
+                    if(!ok) alert("调用系统分享失败，请稍后重试。");
+                };
+                reader.onerror = function(){
+                    shareGenerating = false;
+                    alert("图片读取失败，请稍后重试。");
+                };
+                reader.readAsDataURL(blob);
+                return;
+            }
+
+            if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+                await navigator.share({
+                    title: "个人效率报告 " + date,
+                    text: "效率：" + efficiency.toFixed(1) + "%",
+                    files: [file]
+                });
+                shareGenerating = false;
+                return;
+            }
+
+            shareGenerating = false;
+            alert("当前环境暂不支持系统分享。");
+        }catch(error){
+            shareGenerating = false;
+            if(error && error.name === "AbortError") return;
+            alert("分享失败，请稍后重试。");
+        }
+    });
+}
+
+
+function createShareCanvas(
+    date,
+    records,
+    total,
+    efficiency
+){
+
+    const canvas =
+        document.createElement("canvas");
+
+
+    const width = 720;
+
+    const rowHeight = 48;
+
+    const headerHeight = 150;
+
+    const tableHeaderHeight = 48;
+
+    const footerHeight = 80;
+
+
+    const height =
+        headerHeight
+        +
+        tableHeaderHeight
+        +
+        records.length * rowHeight
+        +
+        footerHeight;
+
+
+    canvas.width = width;
+
+    canvas.height = height;
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+
+    ctx.fillStyle = "#fff";
+
+    ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    /* 标题 */
+
+    ctx.fillStyle = "#111";
+
+    ctx.font =
+        "bold 34px sans-serif";
+
+    ctx.textAlign = "left";
+
+    ctx.fillText(
+        "个人效率报告",
+        45,
+        52
+    );
+
+
+    ctx.fillStyle = "#888";
+
+    ctx.font =
+        "18px sans-serif";
+
+    ctx.fillText(
+        date,
+        45,
+        82
+    );
+
+
+    /* 效率 */
+
+    ctx.fillStyle = "#111";
+
+    ctx.font =
+        "bold 55px sans-serif";
+
+    ctx.textAlign = "right";
+
+    ctx.fillText(
+        efficiency.toFixed(1) + "%",
+        width - 35,
+        67
+    );
+
+
+    ctx.fillStyle = "#777";
+
+    ctx.font =
+        "16px sans-serif";
+
+    ctx.fillText(
+        total.toFixed(1) +
+        " ÷ 660 分钟",
+        width - 35,
+        95
+    );
+
+
+    /* 分割线 */
+
+    ctx.strokeStyle = "#e5e5e5";
+
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+
+    ctx.moveTo(45,125);
+
+    ctx.lineTo(width-35,125);
+
+    ctx.stroke();
+
+
+    /* 表头 */
+
+    const tableTop =
+        headerHeight;
+
+
+    ctx.fillStyle = "#f2f3f4";
+
+    ctx.fillRect(
+        35,
+        tableTop,
+        width-50,
+        tableHeaderHeight
+    );
+
+
+    const columns = [
+
+        {
+            name:"编号",
+            x:65,
+            align:"center"
+        },
+
+        {
+            name:"工序",
+            x:115,
+            align:"left"
+        },
+
+        {
+            name:"数量",
+            x:500,
+            align:"center"
+        },
+
+        {
+            name:"M-MIN",
+            x:590,
+            align:"center"
+        },
+
+        {
+            name:"标准分钟",
+            x:675,
+            align:"center"
+        }
+
+    ];
+
+
+    ctx.fillStyle = "#666";
+
+    ctx.font =
+        "14px sans-serif";
+
+
+    columns.forEach(col => {
+
+        ctx.textAlign =
+            col.align;
+
+        ctx.fillText(
+            col.name,
+            col.x,
+            tableTop+35
+        );
+
+    });
+
+
+    /* 内容 */
+
+    records.forEach(
+        (r,index) => {
+
+            const y =
+                tableTop
+                +
+                tableHeaderHeight
+                +
+                index * rowHeight;
+
+
+            ctx.strokeStyle =
+                "#eeeeee";
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                35,
+                y+rowHeight
+            );
+
+            ctx.lineTo(
+                width-35,
+                y+rowHeight
+            );
+
+            ctx.stroke();
+
+
+            ctx.fillStyle =
+                "#222";
+
+            ctx.font =
+                "14px sans-serif";
+
+
+            ctx.textAlign =
+                "center";
+
+            ctx.fillText(
+                r.processNo,
+                65,
+                y+34
+            );
+
+
+            ctx.textAlign =
+                "left";
+
+
+            let processName =
+                r.processName;
+
+
+            if(processName.length > 30){
+
+                processName =
+                    processName.slice(0,30)
+                    + "…";
+
+            }
+
+
+            ctx.fillText(
+                processName,
+                115,
+                y+28
+            );
+            ctx.fillStyle = "#888";
+            ctx.font = "12px sans-serif";
+            const projectName = (db.projects.find(p=>Number(p.id)===Number(r.projectId))||{}).name || "";
+            ctx.fillText(projectName, 115, y+46);
+            ctx.fillStyle = "#222";
+            ctx.font = "16px sans-serif";
+
+
+            ctx.textAlign =
+                "center";
+
+
+            ctx.fillText(
+                formatNumber(r.quantity),
+                500,
+                y+34
+            );
+
+
+            ctx.fillText(
+                Number(r.mmin).toFixed(3),
+                590,
+                y+34
+            );
+
+
+            ctx.fillText(
+                Number(r.standardMinutes).toFixed(1),
+                675,
+                y+34
+            );
+
+        }
+    );
+
+
+    /* 底部 */
+
+    const footerY =
+        tableTop
+        +
+        tableHeaderHeight
+        +
+        records.length * rowHeight
+        +
+        45;
+
+
+    ctx.fillStyle = "#777";
+
+    ctx.font =
+        "16px sans-serif";
+
+    ctx.textAlign = "left";
+
+    ctx.fillText(
+        "实际工作时间：660分钟（11小时）",
+        45,
+        footerY
+    );
+
+
+    ctx.textAlign = "right";
+
+    ctx.font =
+        "bold 18px sans-serif";
+
+    ctx.fillStyle = "#111";
+
+    ctx.fillText(
+        "标准分钟合计：" +
+        total.toFixed(1),
+        width-35,
+        footerY
+    );
+
+
+    return canvas;
+
+}
+
+
+/* =========================================================
+   工序管理
+========================================================= */
+
+function openProcessAdmin(){
+
+    renderProcessAdmin();
+
+    document.getElementById(
+        "processAdminOverlay"
+    ).classList.add("show");
+
+}
+
+
+function closeProcessAdmin(){
+
+    document.getElementById(
+        "processAdminOverlay"
+    ).classList.remove("show");
+
+}
+
+
+function closeProcessAdminBackground(event){
+
+    if(
+        event.target.id ===
+        "processAdminOverlay"
+    ){
+
+        closeProcessAdmin();
+
+    }
+
+}
+
+
+function renderProcessAdmin(){
+    const box = document.getElementById("processAdminList");
+    box.innerHTML = "";
+
+    db.projects.forEach((project) => {
+        const items = db.processes.filter(p => Number(p.projectId)===Number(project.id));
+
+        const title = document.createElement("div");
+        title.className = "process-admin-project";
+        title.innerHTML = `
+            <span class="project-admin-name">${escapeHtml(project.name)}（${items.length}道工序）</span>
+            <span class="project-admin-actions">
+                <button class="small-btn edit-project-btn" onclick="event.stopPropagation();editProject(${Number(project.id)})">修改</button>
+                <button class="small-btn delete-project-btn" onclick="event.stopPropagation();deleteProject(${Number(project.id)})">删除</button>
+                <span class="admin-arrow">›</span>
+            </span>`;
+
+        const itemsBox = document.createElement("div");
+        itemsBox.className = "process-admin-items";
+
+        items.forEach(p => {
+            const index = db.processes.indexOf(p);
+            const div = document.createElement("div");
+            div.className = "process-admin-item";
+            div.innerHTML = `
+                <div class="process-admin-top">
+                    <div class="process-code">${escapeHtml(p.no)}</div>
+                    <div class="process-admin-name">${escapeHtml(p.name)}</div>
+                </div>
+                <div class="process-admin-mmin">M-MIN：${Number(p.mmin).toFixed(3)}</div>
+                <div class="process-admin-actions">
+                    <button class="small-btn edit-btn" onclick="editProcess(${index})">修改</button>
+                    <button class="small-btn delete-process-btn" onclick="deleteProcess(${index})">删除</button>
+                </div>`;
+            itemsBox.appendChild(div);
+        });
+
+        title.onclick = () => {
+            const open = itemsBox.classList.toggle("open");
+            title.classList.toggle("open", open);
+        };
+
+        box.appendChild(title);
+        box.appendChild(itemsBox);
+    });
+}
+
+/* =========================================================
+   项目管理
+========================================================= */
+
+let editingProjectId = null;
+
+function openProjectEditor(projectId = null){
+    editingProjectId = projectId == null ? null : Number(projectId);
+    const title = document.getElementById("projectEditorTitle");
+    const input = document.getElementById("projectNameInput");
+    const delBtn = document.getElementById("deleteProjectEditorBtn");
+
+    if(editingProjectId == null){
+        title.textContent = "新增项目";
+        input.value = "";
+        delBtn.style.display = "none";
+    }else{
+        const project = db.projects.find(p => Number(p.id)===editingProjectId);
+        if(!project){ editingProjectId=null; return; }
+        title.textContent = "修改项目";
+        input.value = project.name;
+        delBtn.style.display = "block";
+    }
+
+    document.getElementById("projectEditorOverlay").classList.add("show");
+    setTimeout(() => input.focus(), 120);
+}
+
+function editProject(projectId){
+    openProjectEditor(projectId);
+}
+
+function closeProjectEditor(){
+    document.getElementById("projectEditorOverlay").classList.remove("show");
+    editingProjectId = null;
+}
+
+function closeProjectEditorBackground(event){
+    if(event.target.id === "projectEditorOverlay") closeProjectEditor();
+}
+
+function saveProject(){
+    const input = document.getElementById("projectNameInput");
+    const name = input.value.trim();
+    if(!name){ alert("请输入项目名称"); return; }
+
+    if(editingProjectId == null){
+        if(db.projects.some(p => String(p.name).trim() === name)){
+            alert("项目已存在");
+            return;
+        }
+        const ids = db.projects.map(p => Number(p.id)).filter(Number.isFinite);
+        const id = ids.length ? Math.max(...ids) + 1 : 1;
+        db.projects.push({id, name});
+        saveDatabase();
+        closeProjectEditor();
+        renderAll();
+        renderProcessAdmin();
+        renderProjectSelect(id);
+        renderProcessSelect(id);
+        alert("项目已创建，请继续添加该项目的工序。");
+        return;
+    }
+
+    const project = db.projects.find(p => Number(p.id)===editingProjectId);
+    if(!project){ alert("项目不存在"); closeProjectEditor(); return; }
+    const duplicate = db.projects.some(p => Number(p.id)!==editingProjectId && String(p.name).trim()===name);
+    if(duplicate){ alert("项目已存在"); return; }
+    project.name = name;
+    saveDatabase();
+    closeProjectEditor();
+    renderAll();
+    renderProcessAdmin();
+    alert("项目已修改");
+}
+
+function deleteProject(projectId){
+    const project = db.projects.find(p => Number(p.id)===Number(projectId));
+    if(!project) return;
+    const processCount = db.processes.filter(p => Number(p.projectId)===Number(projectId)).length;
+    let recordCount = 0;
+    Object.values(db.records || {}).forEach(list => {
+        if(Array.isArray(list)) recordCount += list.filter(r => Number(r.projectId)===Number(projectId)).length;
+    });
+    const message = recordCount
+        ? `确定删除项目「${project.name}」吗？\n\n该项目包含 ${processCount} 道工序和 ${recordCount} 条效率记录。\n删除项目后，这些关联工序和效率记录也会一起删除。`
+        : `确定删除项目「${project.name}」吗？\n\n该项目包含 ${processCount} 道工序。删除后无法恢复。`;
+    if(!confirm(message)) return;
+    db.projects = db.projects.filter(p => Number(p.id)!==Number(projectId));
+    db.processes = db.processes.filter(p => Number(p.projectId)!==Number(projectId));
+    Object.keys(db.records || {}).forEach(key => {
+        if(Array.isArray(db.records[key])){
+            db.records[key] = db.records[key].filter(r => Number(r.projectId)!==Number(projectId));
+            if(db.records[key].length===0) delete db.records[key];
+        }
+    });
+    saveDatabase();
+    renderAll();
+    renderProcessAdmin();
+    alert("项目已删除");
+}
+
+function deleteEditingProject(){
+    if(editingProjectId == null) return;
+    const id = editingProjectId;
+    closeProjectEditor();
+    deleteProject(id);
+}
+
+/* =========================================================
+   工序编辑
+========================================================= */
+
+function renderProcessProjectSelect(selectedId){
+    const select = document.getElementById("processProjectSelect");
+    select.innerHTML = db.projects.map(p => `<option value="${p.id}" ${Number(p.id)===Number(selectedId)?"selected":""}>${escapeHtml(p.name)}</option>`).join("");
+}
+
+function openProcessEditor(){
+    editingProcessIndex = -1;
+    document.getElementById("processEditorTitle").textContent = "添加工序";
+    renderProcessProjectSelect(db.projects[0]?.id || 1);
+    document.getElementById("processNameInput").value = "";
+    document.getElementById("processMminInput").value = "";
+    document.getElementById("processEditorOverlay").classList.add("show");
+}
+
+function editProcess(index){
+    const p = db.processes[index];
+    editingProcessIndex = index;
+    document.getElementById("processEditorTitle").textContent = "修改工序";
+    renderProcessProjectSelect(p.projectId || 1);
+    document.getElementById("processNameInput").value = p.name;
+    document.getElementById("processMminInput").value = p.mmin;
+    document.getElementById("processEditorOverlay").classList.add("show");
+}
+
+function closeProcessEditor(){ document.getElementById("processEditorOverlay").classList.remove("show"); }
+function closeProcessEditorBackground(event){ if(event.target.id === "processEditorOverlay") closeProcessEditor(); }
+
+function getNextProcessNumber(projectId){
+    let max = 0;
+    db.processes.filter(p=>Number(p.projectId)===Number(projectId)).forEach(p => {
+        const n = parseInt(p.no,10); if(!isNaN(n) && n>max) max=n;
+    });
+    return String(max+1).padStart(2,"0");
+}
+
+function saveProcess(){
+    const projectId = Number(document.getElementById("processProjectSelect").value);
+    const name = document.getElementById("processNameInput").value.trim();
+    const mmin = Number(document.getElementById("processMminInput").value);
+    if(!projectId){ alert("请选择项目"); return; }
+    if(!name){ alert("请输入工序名称"); return; }
+    if(!mmin || mmin<=0){ alert("请输入正确的 M-MIN"); return; }
+    if(editingProcessIndex === -1){
+        db.processes.push({projectId, no:getNextProcessNumber(projectId), name, mmin});
+    }else{
+        const p = db.processes[editingProcessIndex];
+        const oldProjectId = Number(p.projectId);
+        const oldNo = String(p.no);
+        const oldName = p.name;
+        p.projectId = projectId; p.name = name; p.mmin = mmin;
+        Object.values(db.records).forEach(list => (Array.isArray(list)?list:[]).forEach(r => {
+            if(Number(r.projectId)===oldProjectId && String(r.processNo)===oldNo && r.processName===oldName){
+                r.projectId=projectId; r.processName=name; r.mmin=mmin; r.standardMinutes=Number(r.quantity)*mmin;
+            }
+        }));
+    }
+    saveDatabase(); closeProcessEditor(); renderAll(); renderProcessAdmin();
+}
+
+/* =========================================================
+   删除工序
+========================================================= */
+
+function deleteProcess(index){
+
+    const p =
+        db.processes[index];
+
+
+    if(
+        !confirm(
+            "确定删除「"
+            +
+            p.no
+            +
+            "｜"
+            +
+            p.name
+            +
+            "」吗？"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    db.processes.splice(
+        index,
+        1
+    );
+
+
+    saveDatabase();
+
+    renderAll();
+
+    renderProcessAdmin();
+
+}
+
+
+/* =========================================================
+   导出
+========================================================= */
+
+function exportData(){
+    const json = JSON.stringify(db, null, 2);
+    const filename = "个人效率数据备份_" + getTodayKey() + ".json";
+    if(window.AndroidData && typeof window.AndroidData.exportData === "function"){
+        const ok = window.AndroidData.exportData(json, filename);
+        if(!ok) alert("导出失败，请稍后重试");
+        return;
+    }
+    const blob = new Blob([json], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function applyImportedData(text){
+    try{
+        const data = JSON.parse(text);
+        if(!Array.isArray(data.processes) || typeof data.records !== "object") throw new Error();
+        if(!confirm("导入后会覆盖当前数据，确定继续吗？")) return;
+        data.projects = Array.isArray(data.projects) ? data.projects : INITIAL_PROJECTS.map(p=>({...p}));
+        data.processes = data.processes.map(p=>({...p, projectId:Number(p.projectId)||1}));
+        db = data; saveDatabase(); renderAll(); renderProcessAdmin(); alert("数据导入成功");
+    }catch(error){ alert("导入失败：文件格式不正确"); }
+}
+
+function importData(event){
+    if(window.AndroidData && typeof window.AndroidData.pickImportFile === "function"){
+        window.AndroidData.pickImportFile();
+        return;
+    }
+    const file = event && event.target && event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader(); reader.onload = ()=>applyImportedData(reader.result); reader.readAsText(file);
+    event.target.value = "";
+}
+
+window.onAndroidImportData = function(jsonText){ applyImportedData(jsonText); };
+
+/* =========================================================
+   页面切换
+========================================================= */
+
+function switchPage(page, fromHistory=false){
+    const target = document.getElementById("page" + page);
+    if(!target) return;
+
+    const active = document.querySelector(".page.active");
+    const currentPage = active ? active.id.replace("page", "") : "Today";
+    if(currentPage === page){
+        if(page === "Today") renderToday();
+        if(page === "Calendar") renderCalendar();
+        return;
+    }
+
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    target.classList.add("active");
+
+    if(!fromHistory){
+        history.pushState({page:page}, "", "#" + page);
+    }
+
+    if(page === "Today") renderToday();
+    if(page === "Calendar") renderCalendar();
+}
+
+function handleAndroidBack(){
+    // 弹窗优先关闭，不改变页面历史。
+    const overlays = ["addRecordOverlay", "processEditorOverlay", "processAdminOverlay", "shareOverlay"];
+    for(const id of overlays){
+        const el = document.getElementById(id);
+        if(el && el.classList.contains("show")){
+            el.classList.remove("show");
+            return true;
+        }
+    }
+
+    // 日历当天详情属于日历内部层级。
+    const detail = document.getElementById("calendarDetail");
+    if(detail && !detail.classList.contains("hidden")){
+        detail.classList.add("hidden");
+        selectedDetailDate = null;
+        return true;
+    }
+
+    // 页面返回必须走 history.back()，这样“今天 → 日历 → 返回”链路不会断。
+    const active = document.querySelector(".page.active");
+    if(active && active.id !== "pageToday" && history.length > 1){
+        history.back();
+        return true;
+    }
+
+    // 首页作为根页面，系统返回键不退出到桌面。
+    return true;
+}
+
+window.addEventListener("popstate", function(event){
+    const page = event.state && event.state.page;
+    if(page) switchPage(page, true);
+    else switchPage("Today", true);
+});
+
+
+
+
+/* =========================================================
+   全部刷新
+========================================================= */
+
+function renderAll(){
+
+    renderHeader();
+
+    renderToday();
+
+}
+
+
+/* =========================================================
+   顶部日期
+========================================================= */
+
+function renderHeader(){
+
+    document.getElementById(
+        "headerDate"
+    ).textContent =
+        "今天：" +
+        formatDate(
+            getTodayKey()
+        );
+
+}
+
+
+/* =========================================================
+   工具
+========================================================= */
+
+function formatNumber(number){
+
+    return Number(number)
+        .toLocaleString("zh-CN");
+
+}
+
+
+function escapeHtml(text){
+
+    return String(text)
+
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   初始化
+========================================================= */
+
+if(!history.state || !history.state.page){
+    history.replaceState({page:"Today"}, "", "#Today");
+}
+
+renderAll();
+renderProjectSelect(db.projects[0]?.id || 1);
+renderProcessSelect(db.projects[0]?.id || 1);
+
+document.getElementById("processSelect").addEventListener("change", function(){ updateMmin(); });
+
+
+document
+    .getElementById("quantityInput")
+    .addEventListener(
+        "keydown",
+        function(event){
+
+            if(event.key === "Enter"){
+
+                addTodayRecord();
+
+            }
+
+        }
+    );
+
+
+/*
+   每分钟检查一次日期。
+   如果手机一直开着网页跨过午夜，
+   自动刷新成新的一天。
+*/
+
+let lastDate =
+    getTodayKey();
+
+
+setInterval(
+    function(){
+
+        const now =
+            getTodayKey();
+
+
+        if(now !== lastDate){
+
+            lastDate = now;
+
+            renderAll();
+
+            if(
+                document
+                .getElementById("pageCalendar")
+                .classList
+                .contains("active")
+            ){
+
+                calendarDate =
+                    new Date();
+
+                renderCalendar();
+
+            }
+
+        }
+
+    },
+    60000
+);
+
+
+window.addEventListener(
+    "resize",
+    function(){
+
+        /*
+           当前页面不需要额外处理。
+        */
+
+    }
+);
+
+
+/* =========================================================
+   PWA 离线支持
+========================================================= */
+
+if(
+    "serviceWorker"
+    in navigator
+){
+
+    window.addEventListener(
+        "load",
+        function(){
+
+            navigator
+                .serviceWorker
+                .register("./sw.js")
+                .catch(
+                    error =>
+                        console.log(
+                            "Service Worker 注册失败：",
+                            error
+                        )
+                );
+
+        }
+    );
+
+}
+
+
+</script>
+
+</body>
+</html>
